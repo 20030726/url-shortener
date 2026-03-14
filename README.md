@@ -2,6 +2,14 @@
 
 A simple URL shortener with a **TypeScript / Vite web UI** and a Go REST API backend. Open `http://localhost:8080` in your browser to shorten URLs without using the terminal.
 
+## 🌐 Live Demo
+
+A hosted version is available at **https://url-shortener-wtql.onrender.com**
+
+> ⚠️ **Free-tier limitation:** The demo runs on Render's free plan. The server spins down after inactivity and all shortened URLs are stored **in memory only**, so they will be **lost whenever the server restarts or goes to sleep**. For persistent short links, run the service locally or self-host it.
+
+---
+
 ## Features
 
 * 🔗 Shorten long URLs via the web UI or REST API
