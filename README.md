@@ -1,31 +1,68 @@
 # URL Shortener Service
 
-A simple REST API built with Go that converts long URLs into short links and redirects users to the original URL.
+A simple URL shortener with a **TypeScript / Vite web UI** and a Go REST API backend. Open `http://localhost:8080` in your browser to shorten URLs without using the terminal.
 
 ## Features
 
-* Create short URLs from long links
-* Redirect short URLs to the original destination
-* Simple REST API
-* Lightweight implementation using Go standard library
+* 🔗 Shorten long URLs via the web UI or REST API
+* ↩️ Redirect short URLs to the original destination
+* 📋 One-click copy of the shortened link
+* 🕓 In-page history of recently shortened links
+* Lightweight Go backend with embedded frontend (single binary)
 
 ---
 
-## API Endpoints
+## Quick Start
+
+### Prerequisites
+
+| Tool | Minimum version |
+|------|----------------|
+| Go   | 1.21           |
+| Node.js | 18          |
+| npm  | 9              |
+
+### Build & Run
+
+```bash
+# 1. Clone the repo
+git clone https://github.com/20030726/url-shortener.git
+cd url-shortener
+
+# 2. Install frontend dependencies, compile TypeScript, then build the Go binary
+make build
+
+# 3. Start the server
+./url-shortener
+```
+
+The server (and web UI) will be available at **http://localhost:8080**.
+
+> **One-step alternative:**
+> ```bash
+> make run
+> ```
+
+---
+
+## Web UI
+
+Open **http://localhost:8080** in your browser:
+
+1. Paste any long URL into the input box.
+2. Click **Shorten**.
+3. Copy the generated short link with the **Copy** button.
+4. The last 10 shortened links appear in the *Recent links* list below.
+
+---
+
+## REST API
+
+You can still use the API directly if you prefer.
 
 ### Create Short URL
 
 **POST /shorten**
-
-Request:
-
-```json
-{
-  "url": "https://example.com"
-}
-```
-
-Example using curl:
 
 ```bash
 curl -X POST http://localhost:8080/shorten \
@@ -41,51 +78,44 @@ Response:
 }
 ```
 
----
-
 ### Redirect to Original URL
 
 **GET /{short_code}**
-
-Example:
 
 ```
 http://localhost:8080/abc123
 ```
 
-The server will redirect the user to the original URL.
+The server redirects the browser to the original URL.
 
 ---
 
-## Run Locally
+## Development
 
-Clone the repository:
-
-```bash
-git clone https://github.com/20030726/url-shortener.git
-cd url-shortener
-```
-
-Run the server:
+### Frontend (TypeScript + Vite)
 
 ```bash
-go run main.go
+cd frontend
+npm install
+npm run dev        # dev server on http://localhost:5173 (proxies /shorten to :8080)
+npm run build      # compile to frontend/dist/
 ```
 
-The server will start on:
+### Backend (Go)
 
+```bash
+go run main.go     # hot-reload via `go run`
+go test ./...      # run tests
 ```
-http://localhost:8080
+
+### All-in-one
+
+```bash
+make build   # build frontend then Go binary
+make run     # build + start server
+make test    # run Go tests
+make clean   # remove build artefacts
 ```
-
----
-
-## Example Workflow
-
-1. Send a POST request to `/shorten`
-2. Receive a short URL
-3. Open the short URL in a browser
-4. The server redirects to the original link
 
 ---
 
@@ -93,17 +123,24 @@ http://localhost:8080
 
 ```
 url-shortener/
-├── LICENSE
-├── README.md
+├── frontend/            # TypeScript + Vite web UI
+│   ├── src/
+│   │   ├── api.ts       # API client (calls /shorten)
+│   │   ├── main.ts      # UI logic
+│   │   └── style.css    # Styles
+│   ├── dist/            # Compiled assets (embedded in Go binary)
+│   ├── index.html
+│   └── package.json
+├── main.go              # Go HTTP server (embeds frontend/dist)
+├── main_test.go
+├── Makefile
 ├── go.mod
-└── main.go
+└── README.md
 ```
 
 ---
 
 ## Contributing
-
-Contributions are welcome.
 
 1. Fork the repository
 2. Create a new branch
@@ -115,4 +152,3 @@ Contributions are welcome.
 ## License
 
 This project is licensed under the MIT License.
-
