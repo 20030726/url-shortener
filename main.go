@@ -59,8 +59,13 @@ func shortenHandler(w http.ResponseWriter, r *http.Request) {
 	urlStore[short] = req.URL
 	mu.Unlock()
 
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+
 	resp := map[string]string{
-		"short_url": fmt.Sprintf("http://localhost:8080/%s", short),
+		"short_url": fmt.Sprintf("%s://%s/%s", scheme, r.Host, short),
 	}
 
 	w.Header().Set("Content-Type", "application/json")
