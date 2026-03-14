@@ -96,7 +96,6 @@ url-shortener/
 ├── LICENSE
 ├── README.md
 ├── go.mod
-├── go.sum
 └── main.go
 ```
 
