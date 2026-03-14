@@ -1,8 +1,10 @@
 package main
 
 import (
+	"embed"
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"log"
 	"math/rand"
 	"net/http"
@@ -11,6 +13,9 @@ import (
 	"time"
 )
 
+//go:embed frontend/dist
+var frontendFiles embed.FS
+
 var (
 	urlStore = make(map[string]string)   // ← fixed: 'ake' → 'make'
 	mu       sync.Mutex
@@ -18,8 +23,17 @@ var (
 
 func main() {
 	rand.Seed(time.Now().UnixNano())
+
+	distFS, err := fs.Sub(frontendFiles, "frontend/dist")
+	if err != nil {
+		log.Fatalf("Failed to load frontend: %v", err)
+	}
+	staticFS := http.FS(distFS)
+
 	http.HandleFunc("/shorten", shortenHandler)
-	http.HandleFunc("/", redirectHandler)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		routeHandler(staticFS, w, r)
+	})
 	log.Println("Server started at :8080")
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Server failed: %v", err)
@@ -70,6 +84,25 @@ func shortenHandler(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(resp)
+}
+
+func routeHandler(staticFS http.FileSystem, w http.ResponseWriter, r *http.Request) {
+	// Root always serves the SPA index page
+	if r.URL.Path == "/" {
+		http.FileServer(staticFS).ServeHTTP(w, r)
+		return
+	}
+
+	// Serve any file that exists in the embedded dist directory
+	f, err := staticFS.Open(r.URL.Path)
+	if err == nil {
+		f.Close()
+		http.FileServer(staticFS).ServeHTTP(w, r)
+		return
+	}
+
+	// Otherwise treat the path segment as a short code and redirect
+	redirectHandler(w, r)
 }
 
 func redirectHandler(w http.ResponseWriter, r *http.Request) {
